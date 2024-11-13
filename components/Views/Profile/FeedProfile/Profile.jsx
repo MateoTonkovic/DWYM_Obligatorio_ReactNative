@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, Button, TouchableOpacity, Alert, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { profileService } from '../../../service/profile.service';
-import PlaceholderImage from '../../../Components/PlaceholderImage/PlaceholderImage';
+import { profileService } from '../../../../service/profile.service';
+import PlaceholderImage from '../../../PlaceholderImage/PlaceholderImage';
 
 const Profile = () => {
   const route = useRoute();
