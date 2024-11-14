@@ -1,5 +1,4 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Login from '../Views/Auth/Login/Login';
@@ -13,16 +12,14 @@ const Stack = createNativeStackNavigator();
 
 function AppNavigator() {
     return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login">
-                <Stack.Screen name="Login" component={Login} />
-                <Stack.Screen name="Register" component={Register} />
-                <Stack.Screen name="Feed" component={Feed} />
-                <Stack.Screen name="Profile" component={Profile} />
-                <Stack.Screen name="EditProfile" component={EditProfile} />
-                <Stack.Screen name="PostProfile" component={PostProfile} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <Stack.Navigator initialRouteName="Login">
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="Register" component={Register} />
+            <Stack.Screen name="Feed" component={Feed} />
+            <Stack.Screen name="Profile" component={Profile} />
+            <Stack.Screen name="EditProfile" component={EditProfile} />
+            <Stack.Screen name="PostProfile" component={PostProfile} />
+        </Stack.Navigator>
     );
 }
 

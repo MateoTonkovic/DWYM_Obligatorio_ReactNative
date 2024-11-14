@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-const BASE_URL = 'http://192.168.8.255:3000/api'; // URL base de tu API
+const BASE_URL = 'http://localhost:3000/api'; // URL base de tu API
 
 // Función para obtener los posteos
 export const fetchPosts = async () => {
