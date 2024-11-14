@@ -1,29 +1,35 @@
-import { headersHelper } from "../helpers/headers.helper";
-import axios from "./axios";
+import axios from './axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Función para obtener el token desde AsyncStorage
+const getAuthorizationHeaders = async () => {
+  const token = await AsyncStorage.getItem("token");
+  return { authorization: `Bearer ${token}` };
+};
 
 // Función para obtener el perfil del usuario
-const fetchProfile = (id) => {
-  const authorizationHeader = headersHelper.getAuthorizationHeaders();
+const fetchProfile = async (id) => {
+  const authorizationHeader = await getAuthorizationHeaders();
 
-  const response = axios.get(`/user/profile/${id}`, {
+  const response = await axios.get(`/user/profile/${id}`, {
     headers: { ...authorizationHeader },
   });
 
   return response;
 };
 
-// Nueva función para actualizar el perfil
-const updateProfile = (token, data) => {
-  const authorizationHeader = headersHelper.getAuthorizationHeaders();
+// Función para actualizar el perfil
+const updateProfile = async (data) => {
+  const authorizationHeader = await getAuthorizationHeaders();
 
-  return axios.put("/profile", data, {
+  return await axios.put("/profile", data, {
     headers: { ...authorizationHeader },
   });
 };
 
-// Función para el método postProfile
-const postProfile = async (formData, token) => {
-  const authorizationHeader = headersHelper.getAuthorizationHeaders();
+// Función para publicar el perfil
+const postProfile = async (formData) => {
+  const authorizationHeader = await getAuthorizationHeaders();
 
   return await axios.post("/api/profile", formData, {
     headers: {
@@ -33,22 +39,25 @@ const postProfile = async (formData, token) => {
   });
 };
 
+// Función para seguir a un usuario
 const followUser = async (userId) => {
-  const authorizationHeader = headersHelper.getAuthorizationHeaders();
+  const authorizationHeader = await getAuthorizationHeaders();
 
   return await axios.post(`/user/add-friend/${userId}`, null, {
     headers: { ...authorizationHeader },
   });
 };
 
+// Función para editar el perfil
 const editProfile = async (data) => {
-  const authorizationHeader = headersHelper.getAuthorizationHeaders();
+  const authorizationHeader = await getAuthorizationHeaders();
 
   return await axios.put("/user/profile/edit", data, {
     headers: { ...authorizationHeader },
   });
 };
 
+// Exportar el servicio con todas las funciones
 export const profileService = {
   fetchProfile,
   updateProfile,
