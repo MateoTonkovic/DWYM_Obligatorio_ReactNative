@@ -1,103 +1,129 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { feedService } from '../../../service/feed.service';
-import Bottombar from '../../../Components/Bottombar/Bottombar';
-import Sidebar from '../../../Components/Sidebar/Sidebar';
-import { Icons } from '../../../Components/Icons/Icons';
-import Post from '../../../Components/Post/Post';
+import React from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import Icons from 'react-native-vector-icons/FontAwesome'; // Ajusta según tus iconos en React Native
 
-const PostProfile = () => {
-    const navigation = useNavigation();
-    const route = useRoute();
-    const { id } = route.params;
-    const [image, setImage] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const PostProfile = ({ username, userImage, postImage, likes, postDescription }) => {
+  const profileData = {
+    username: 'NombreUsuario',
+    photoLikes: 333,
+    photoDescription: 'beautiful',
+  };
 
-    useEffect(() => {
-        const fetchPostsFromFeed = async () => {
-            try {
-                const response = await feedService.fetchFeed();
-                const posts = response.data;
-                const post = posts.find((p) => p._id === id);
-
-                if (post) {
-                    setImage(post);
-                } else {
-                    setError('Post no encontrado.');
-                }
-            } catch (err) {
-                setError('No se pudo cargar el feed.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPostsFromFeed();
-    }, [id]);
-
-    if (loading) return <ActivityIndicator size="large" color="#6200EE" />;
-    if (error) return <Text style={styles.errorText}>{error}</Text>;
-
-    return (
-        <View style={styles.container}>
-            <Sidebar />
-            <View style={styles.postContentContainer}>
-                <View style={styles.divArrowBack}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.arrowBack}>
-                        <Icons.ArrowBack />
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.headerNamePostProfile}>
-                    <Text style={styles.authorName}>{image.author}</Text>
-                </View>
-                <Post image={image} />
-            </View>
-            <Bottombar />
+  return (
+    <View style={styles.postContainer}>
+      {/* Header */}
+      <View style={styles.headerPostProfile}>
+        <TouchableOpacity style={styles.arrowBack} onPress={() => console.log('Go back')}>
+          <Icons name="arrow-left" size={20} />
+        </TouchableOpacity>
+        <View style={styles.headerNamePostProfile}>
+          <Text style={styles.usernameHeader}>{profileData.username}</Text>
         </View>
-    );
+      </View>
+
+      {/* Profile Info */}
+      <View style={styles.imageContainer}>
+        <View style={styles.profileAvatarName}>
+          <View style={styles.profileAvatar}>
+            <Image
+              style={styles.profileImage}
+              source={{ uri: userImage || 'https://placehold.co/80' }}
+            />
+          </View>
+          <Text style={styles.usernameHeader}>{profileData.username}</Text>
+        </View>
+
+        {/* Post Image */}
+        <View style={styles.espacioFoto}>
+          <Image
+            style={styles.postProfileImage}
+            source={{ uri: postImage || 'https://placehold.co/400' }}
+          />
+        </View>
+
+        {/* Post Actions */}
+        <View style={styles.postActions}>
+          <TouchableOpacity onPress={() => console.log('Liked')}>
+            <Icons name="heart" size={24} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => console.log('Comment')}>
+            <Icons name="comment" size={24} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Likes and Description */}
+        <Text style={styles.postLikes}>{profileData.photoLikes} likes</Text>
+        <Text style={styles.postDescription}>{profileData.photoDescription}</Text>
+      </View>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-    },
-    postContentContainer: {
-        flex: 1,
-        alignItems: 'center',
-        width: '100%',
-        maxWidth: 600,
-        padding: 10,
-        backgroundColor: 'white',
-        borderRadius: 8,
-        marginVertical: 20,
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    },
-    divArrowBack: {
-        alignSelf: 'flex-start',
-    },
-    headerNamePostProfile: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    authorName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
-    arrowBack: {
-        padding: 5,
-        transform: [{ scale: 1 }],
-    },
-    errorText: {
-        color: 'red',
-        fontSize: 16,
-        textAlign: 'center',
-    },
+  postContainer: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+  },
+  headerPostProfile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: 8,
+  },
+  arrowBack: {
+    padding: 8,
+  },
+  usernameHeader: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  imageContainer: {
+    paddingBottom: 60,
+    alignItems: 'center',
+  },
+  profileAvatarName: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+    width: '100%',
+  },
+  profileAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  espacioFoto: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginTop: 16,
+  },
+  postProfileImage: {
+    width: '100%',
+    height: 300,
+  },
+  postActions: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 10,
+  },
+  postLikes: {
+    marginTop: 8,
+    fontSize: 14,
+  },
+  postDescription: {
+    marginTop: 10,
+    fontSize: 16,
+  },
 });
 
 export default PostProfile;
