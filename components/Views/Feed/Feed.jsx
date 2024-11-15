@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet,Text } from 'react-native';
-import {feedService} from '../../../../service/feed.service';
+import {feedService} from '../../../service/feed.service';
 import CreatePostModal from '../../CreatePostModal/CreatePostModal';
 import CreatePostButton from '../../CreatePostButton/CreatePostButton';
-import SideBar from '../../SideBar/SideBar';
-import BottomBar from '../../BottomBar/BottomBar';
+import SideBar from '../../Sidebar/Sidebar';
+import BottomBar from '../../Bottombar/Bottombar';
 import Post from '../../Post/Post';
 
 

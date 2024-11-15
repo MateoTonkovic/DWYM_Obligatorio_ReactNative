@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, TouchableOpacity, Image, Alert, StyleShe
 import { Formik } from 'formik';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authService } from '../../../service/auth.service';
+import { authService } from '../../../../service/auth.service';
 
 const Register = () => {
   const navigation = useNavigation();
@@ -41,8 +41,8 @@ const Register = () => {
   return (
     <View style={styles.registerContainer}>
       <View style={styles.imgRegister}>
-        <Image source={require('../../../assets/logo.png')} style={styles.logoImage} />
-        <Image source={require('../../../assets/fakestagram.png')} style={styles.fakestagramImage} />
+        <Image source={require('../../../../assets/images/Logo.png')} style={styles.logoImage} />
+        <Image source={require('../../../../assets/images/fakestagram.png')} style={styles.fakestagramImage} />
       </View>
 
       {/* Botón de regreso */}

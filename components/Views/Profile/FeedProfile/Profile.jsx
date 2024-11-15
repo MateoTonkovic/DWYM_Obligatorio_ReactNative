@@ -3,7 +3,7 @@ import { View, Text, Image, Button, TouchableOpacity, Alert, StyleSheet, FlatLis
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { profileService } from '../../../../service/profile.service';
-import PlaceholderImage from '../../../PlaceholderImage/PlaceholderImage';
+import PlaceholderImage from '../../../PlaceHolderImage/PlaceHolderImage';
 
 const Profile = () => {
   const route = useRoute();

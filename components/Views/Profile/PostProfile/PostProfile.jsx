@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { feedService } from '../../../service/feed.service';
-import Bottombar from '../../../Components/Bottombar/Bottombar';
-import Sidebar from '../../../Components/Sidebar/Sidebar';
-import { Icons } from '../../../Components/Icons/Icons';
-import Post from '../../../Components/Post/Post';
+import { feedService } from '../../../../service/feed.service';
+import Bottombar from '../../../Bottombar/Bottombar';
+import Sidebar from '../../../Sidebar/Sidebar';
+import { Icons } from '../../../Icons/Icons';
+import Post from '../../../Post/Post';
 
 const PostProfile = () => {
     const navigation = useNavigation();

@@ -2,7 +2,7 @@ import React from 'react';
 import { useFormik } from 'formik';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { profileService } from '../../service/profile.service';
+import { profileService } from '../../../service/profile.service';
 
 const EditProfile = () => {
     const navigation = useNavigation();
