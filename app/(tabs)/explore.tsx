@@ -1,4 +1,3 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform } from 'react-native';
 
 import { Collapsible } from '@/components/Collapsible';
@@ -6,12 +5,20 @@ import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function TabTwoScreen() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
+      headerImage={
+        <IconSymbol
+          size={310}
+          color="#808080"
+          name="chevron.left.forwardslash.chevron.right"
+          style={styles.headerImage}
+        />
+      }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Explore</ThemedText>
       </ThemedView>
@@ -19,11 +26,11 @@ export default function TabTwoScreen() {
       <Collapsible title="File-based routing">
         <ThemedText>
           This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.jsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.jsx</ThemedText>
+          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
+          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
         </ThemedText>
         <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.jsx</ThemedText>{' '}
+          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
           sets up the tab navigator.
         </ThemedText>
         <ExternalLink href="https://docs.expo.dev/router/introduction">
@@ -72,8 +79,8 @@ export default function TabTwoScreen() {
         <ThemedText>
           This template includes an example of an animated component. The{' '}
           <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-          to create a waving hand animation.
+          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
+          library to create a waving hand animation.
         </ThemedText>
         {Platform.select({
           ios: (

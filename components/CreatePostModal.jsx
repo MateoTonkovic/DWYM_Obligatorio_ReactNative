@@ -1,51 +1,33 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  Image,
-  TextInput,
-  StyleSheet,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { PlusSquare } from 'lucide-react-native';
+import { Icons } from '../components/Icons';
 
-
-const CreatePostModal = ({ isVisible, onClose, onSubmit }) => {
+const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
   const [newPost, setNewPost] = useState({
     image: null,
     caption: '',
   });
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleImagePick = async () => {
-    try {
-      if (Platform.OS === 'ios') {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          setError('Se necesitan permisos para acceder a la galería');
-          return;
-        }
-      }
+  const handleImageChange = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      setError('Permission to access camera roll is required!');
+      return;
+    }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 1,
+    });
 
-      if (!result.canceled) {
-        setNewPost({ ...newPost, image: result.assets[0].uri });
-        setError(null);
-      }
-    } catch (err) {
-      setError('Error al seleccionar la imagen');
-      console.error(err);
+    if (!pickerResult.cancelled) {
+      setNewPost({ ...newPost, image: pickerResult.uri });
+      setPreviewUrl(pickerResult.uri);
+      setError(null);
     }
   };
 
@@ -60,8 +42,8 @@ const CreatePostModal = ({ isVisible, onClose, onSubmit }) => {
 
     try {
       await onSubmit(newPost);
-      // Limpiar el formulario
       setNewPost({ image: null, caption: '' });
+      setPreviewUrl(null);
       onClose();
     } catch (err) {
       setError('Error al crear el post. Por favor, intenta de nuevo.');
@@ -73,55 +55,42 @@ const CreatePostModal = ({ isVisible, onClose, onSubmit }) => {
 
   return (
     <Modal
-      visible={isVisible}
       animationType="slide"
       transparent={true}
+      visible={isOpen}
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.title}>Create New Post</Text>
-          
-          {error && (
-            <Text style={styles.errorText}>{error}</Text>
-          )}
-
+          <Text style={styles.modalTitle}>Create New Post</Text>
+          {error && <Text style={styles.errorMessage}>{error}</Text>}
           <View style={styles.imageUploadContainer}>
-            {newPost.image ? (
+            {previewUrl ? (
               <View style={styles.imagePreview}>
-                <Image
-                  source={{ uri: newPost.image }}
-                  style={styles.previewImage}
-                  resizeMode="contain"
-                />
+                <Image source={{ uri: previewUrl }} style={styles.image} />
                 <TouchableOpacity
                   style={styles.changeImageButton}
-                  onPress={() => setNewPost({ ...newPost, image: null })}
+                  onPress={() => {
+                    setPreviewUrl(null);
+                    setNewPost({ ...newPost, image: null });
+                  }}
                 >
                   <Text style={styles.changeImageText}>Change Image</Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              <TouchableOpacity
-                style={styles.uploadPlaceholder}
-                onPress={handleImagePick}
-              >
-                <PlusSquare color="#0095f6" size={48} />
+              <TouchableOpacity style={styles.uploadPlaceholder} onPress={handleImageChange}>
+                <Icons.PlusSquare size={48} color="#0095f6" />
                 <Text style={styles.uploadText}>Upload Photo</Text>
               </TouchableOpacity>
             )}
           </View>
-
           <TextInput
             style={styles.captionInput}
             placeholder="Write a caption..."
             value={newPost.caption}
             onChangeText={(text) => setNewPost({ ...newPost, caption: text })}
-            multiline
-            numberOfLines={4}
-            placeholderTextColor="#666"
           />
-
           <View style={styles.modalActions}>
             <TouchableOpacity
               style={styles.cancelButton}
@@ -130,17 +99,13 @@ const CreatePostModal = ({ isVisible, onClose, onSubmit }) => {
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
-              style={[
-                styles.shareButton,
-                (!newPost.image || isLoading) && styles.shareButtonDisabled,
-              ]}
+              style={styles.shareButton}
               onPress={handleSubmit}
               disabled={isLoading || !newPost.image}
             >
               {isLoading ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text style={styles.shareButtonText}>Share</Text>
               )}
@@ -157,23 +122,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 24,
+    width: '100%',
+    maxWidth: 500,
     maxHeight: '90%',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
+  modalTitle: {
     textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '600',
     marginBottom: 20,
+  },
+  errorMessage: {
+    color: 'red',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   imageUploadContainer: {
     borderWidth: 2,
-    borderStyle: 'dashed',
     borderColor: '#dbdbdb',
     borderRadius: 8,
     padding: 20,
@@ -186,7 +158,7 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
   },
-  previewImage: {
+  image: {
     width: '100%',
     height: 300,
     borderRadius: 4,
@@ -206,50 +178,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   uploadText: {
-    color: '#0095f6',
     marginTop: 8,
+    color: '#0095f6',
   },
   captionInput: {
-    borderWidth: 1,
     borderColor: '#dbdbdb',
+    borderWidth: 1,
     borderRadius: 4,
     padding: 12,
     marginBottom: 16,
-    minHeight: 100,
-    textAlignVertical: 'top',
+    fontSize: 14,
   },
   modalActions: {
     flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
   cancelButton: {
-    padding: 8,
-    paddingHorizontal: 20,
-    borderRadius: 4,
-    borderWidth: 1,
+    backgroundColor: 'transparent',
     borderColor: '#dbdbdb',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 4,
   },
   cancelButtonText: {
     fontWeight: '600',
   },
   shareButton: {
     backgroundColor: '#0095f6',
-    padding: 8,
-    paddingHorizontal: 20,
+    padding: 10,
     borderRadius: 4,
-  },
-  shareButtonDisabled: {
-    backgroundColor: '#b2dffc',
+    alignItems: 'center',
   },
   shareButtonText: {
     color: 'white',
     fontWeight: '600',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
-    textAlign: 'center',
   },
 });
 

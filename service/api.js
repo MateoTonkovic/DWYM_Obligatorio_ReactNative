@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-
 const BASE_URL = 'http://localhost:3000/api'; // URL base de tu API
 
 // Función para obtener los posteos

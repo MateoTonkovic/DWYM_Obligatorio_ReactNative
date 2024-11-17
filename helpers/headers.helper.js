@@ -1,5 +1,7 @@
-const getAuthorizationHeaders = () => {
-  const token = localStorage.getItem("token");
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const getAuthorizationHeaders = async () => {
+  const token = await AsyncStorage.getItem("token");
 
   const headers = {
     Authorization: `Bearer ${token}`,
