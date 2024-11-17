@@ -1,15 +1,9 @@
-import axios from './axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Función para obtener el token desde AsyncStorage
-const getAuthorizationHeaders = async () => {
-  const token = await AsyncStorage.getItem("token");
-  return { authorization: `Bearer ${token}` };
-};
+import { headersHelper } from "../helpers/headers.helper";
+import axios from "./axios";
 
 // Función para obtener el perfil del usuario
 const fetchProfile = async (id) => {
-  const authorizationHeader = await getAuthorizationHeaders();
+  const authorizationHeader = await headersHelper.getAuthorizationHeaders();
 
   const response = await axios.get(`/user/profile/${id}`, {
     headers: { ...authorizationHeader },
@@ -18,18 +12,18 @@ const fetchProfile = async (id) => {
   return response;
 };
 
-// Función para actualizar el perfil
+// Nueva función para actualizar el perfil
 const updateProfile = async (data) => {
-  const authorizationHeader = await getAuthorizationHeaders();
+  const authorizationHeader = await headersHelper.getAuthorizationHeaders();
 
   return await axios.put("/profile", data, {
     headers: { ...authorizationHeader },
   });
 };
 
-// Función para publicar el perfil
+// Función para el método postProfile
 const postProfile = async (formData) => {
-  const authorizationHeader = await getAuthorizationHeaders();
+  const authorizationHeader = await headersHelper.getAuthorizationHeaders();
 
   return await axios.post("/api/profile", formData, {
     headers: {
@@ -39,29 +33,43 @@ const postProfile = async (formData) => {
   });
 };
 
-// Función para seguir a un usuario
 const followUser = async (userId) => {
-  const authorizationHeader = await getAuthorizationHeaders();
+  try {
+    const authorizationHeader = await headersHelper.getAuthorizationHeaders();
 
-  return await axios.post(`/user/add-friend/${userId}`, null, {
-    headers: { ...authorizationHeader },
-  });
+    return await axios.post(`/user/add-friend/${userId}`, null, {
+      headers: { ...authorizationHeader },
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
-// Función para editar el perfil
+const unfollowUser = async (userId) => {
+  try {
+    const authorizationHeader = await headersHelper.getAuthorizationHeaders();
+
+    return await axios.delete(`/user/remove-friend/${userId}`, {
+      headers: { ...authorizationHeader },
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const editProfile = async (data) => {
-  const authorizationHeader = await getAuthorizationHeaders();
+  const authorizationHeader = await headersHelper.getAuthorizationHeaders();
 
   return await axios.put("/user/profile/edit", data, {
     headers: { ...authorizationHeader },
   });
 };
 
-// Exportar el servicio con todas las funciones
 export const profileService = {
   fetchProfile,
   updateProfile,
   postProfile,
   followUser,
   editProfile,
+  unfollowUser,
 };

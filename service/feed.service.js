@@ -1,10 +1,14 @@
-import axios from './axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "./axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { headersHelper } from "../helpers/headers.helper";
 
 const fetchFeed = async () => {
   const token = await AsyncStorage.getItem("token");
+
   const response = await axios.get("/posts/feed", {
-    headers: { authorization: `Bearer ${token}` },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
   });
   return response;
 };
@@ -21,12 +25,14 @@ const sendPost = async (data) => {
       "Content-Type": "multipart/form-data",
     },
   });
+
   return response;
 };
 
 const likePost = async (postId) => {
   try {
     const token = await AsyncStorage.getItem("token");
+
     const response = await axios.post(
       `/posts/${postId}/like`,
       {},
@@ -42,8 +48,24 @@ const likePost = async (postId) => {
   }
 };
 
+const removeLike = async (postId) => {
+  const authorizationHeader = await headersHelper.getAuthorizationHeaders();
+
+  try {
+    const response = await axios.delete(`/posts/${postId}/like`, {
+      headers: {
+        ...authorizationHeader,
+      },
+    });
+    return response;
+  } catch (err) {
+    return err.response;
+  }
+};
+
 export const feedService = {
   fetchFeed,
   sendPost,
   likePost,
+  removeLike,
 };
