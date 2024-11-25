@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://192.168.8.101:3000/api';
+const API_URL = 'http://172.20.10.3:3001/api';
 
 const instance = axios.create({
   baseURL: API_URL,
@@ -22,7 +22,18 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
+// Servicio para buscar usuarios
+export const searchUsers = async (query) => {
+  try {
+    const response = await axios.get(`${API_URL}/user/search`, {
+      params: { query }, // Envía el término de búsqueda como parámetro
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error en la búsqueda:", error.message);
+    throw new Error("No se pudo realizar la búsqueda");
+  }
+};
 const loginUser = async (credentials) => {
   try {
     const response = await instance.post("/auth/login", credentials);
