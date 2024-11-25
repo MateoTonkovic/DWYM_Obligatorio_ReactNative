@@ -7,11 +7,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Feather } from '@expo/vector-icons';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
-// Auth
+// Auth Screens
 import Login from './screens/Auth/Login';
 import Register from './screens/Auth/Register';
 
-// Main
+
+// Main Screens
 import HomeScreen from './screens/Main/HomeScreen';
 import SearchScreen from './screens/Main/SearchScreen';
 import CreatePostScreen from './screens/Main/CreatePostScreen';
@@ -24,6 +25,7 @@ import EditProfileScreen from './screens/Other/EditProfileScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Configuración del Tab Navigator
 function TabNavigator() {
   return (
     <Tab.Navigator
@@ -90,6 +92,7 @@ function TabNavigator() {
   );
 }
 
+// Configuración del Stack Navigator
 function Navigation() {
   const { isAuthenticated, isLoading, checkToken } = useAuth();
 
@@ -98,7 +101,7 @@ function Navigation() {
   }, []);
 
   if (isLoading) {
-    return null;
+    return null; // Muestra una pantalla de carga o un placeholder si es necesario
   }
 
   return (
@@ -136,6 +139,7 @@ function Navigation() {
   );
 }
 
+// Componente principal de la App
 export default function App() {
   return (
     <AuthProvider>
@@ -145,6 +149,7 @@ export default function App() {
   );
 }
 
+// Estilos globales
 const styles = StyleSheet.create({
   container: {
     flex: 1,
