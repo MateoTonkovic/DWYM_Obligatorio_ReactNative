@@ -170,7 +170,7 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
               <Text style={styles.statNumber}>
                 {profileData.user.friends?.length || 0}
               </Text>
-              <Text style={styles.statLabel}>Following</Text>
+              <Text style={styles.statLabel}>Amigos</Text>
             </View>
           </View>
         </View>
@@ -207,7 +207,7 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
             onPress={handleFollowUser}
           >
             <Text style={styles.buttonText}>
-              {isUserFriend ? 'Siguiendo' : 'Seguir'}
+              {isUserFriend ? '✓ Amigos' : 'Agregar'}
             </Text>
           </TouchableOpacity>
         )}
