@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Platform,
+  ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
@@ -38,8 +40,16 @@ const CreatePostScreen = () => {
 
   const pickImage = async () => {
     try {
+      // Solicitar permisos
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería para continuar.');
+        return;
+      }
+
+      // Seleccionar imagen de la galería
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['image'],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 4],
         quality: 0.8,
@@ -47,8 +57,11 @@ const CreatePostScreen = () => {
 
       if (!result.canceled) {
         setImage(result.assets[0].uri);
+      } else {
+        console.log('Selección cancelada');
       }
     } catch (error) {
+      console.error('Error al seleccionar la imagen:', error);
       Alert.alert('Error', 'No se pudo seleccionar la imagen');
     }
   };
@@ -116,73 +129,83 @@ const CreatePostScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Nueva Publicación</Text>
-      </View>
-
-      <View style={styles.imageContainer}>
-        {image ? (
-          <>
-            <Image source={{ uri: image }} style={styles.selectedImage} />
-            <TouchableOpacity
-              style={styles.removeImageButton}
-              onPress={() => setImage(null)}
-            >
-              <Feather name="x" size={24} color="white" />
-            </TouchableOpacity>
-          </>
-        ) : (
-          <View style={styles.placeholderContainer}>
-            <Feather name="image" size={50} color="#666" />
-            <Text style={styles.placeholderText}>Selecciona una imagen</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <SafeAreaView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Nueva Publicación</Text>
           </View>
-        )}
-      </View>
 
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.galleryButton]}
-          onPress={pickImage}
-        >
-          <Feather name="image" size={24} color="white" />
-          <Text style={styles.buttonText}>Galería</Text>
-        </TouchableOpacity>
+          <View style={styles.imageWrapper}>
+            <View style={styles.imageContainer}>
+              {image ? (
+                <>
+                  <Image source={{ uri: image }} style={styles.selectedImage} />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => setImage(null)}
+                  >
+                    <Feather name="x" size={24} color="white" />
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <View style={styles.placeholderContainer}>
+                  <Feather name="image" size={50} color="#666" />
+                  <Text style={styles.placeholderText}>Selecciona una imagen</Text>
+                </View>
+              )}
+            </View>
+          </View>
 
-        <TouchableOpacity
-          style={[styles.button, styles.cameraButton]}
-          onPress={takePhoto}
-        >
-          <Feather name="camera" size={24} color="white" />
-          <Text style={styles.buttonText}>Cámara</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.galleryButton]}
+              onPress={pickImage}
+            >
+              <Feather name="image" size={24} color="white" />
+              <Text style={styles.buttonText}>Galería</Text>
+            </TouchableOpacity>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Escribe una descripción..."
-        placeholderTextColor="#666"
-        value={caption}
-        onChangeText={setCaption}
-        multiline
-        maxLength={2200}
-      />
+            <TouchableOpacity
+              style={[styles.button, styles.cameraButton]}
+              onPress={takePhoto}
+            >
+              <Feather name="camera" size={24} color="white" />
+              <Text style={styles.buttonText}>Cámara</Text>
+            </TouchableOpacity>
+          </View>
 
-      <TouchableOpacity
-        style={[styles.postButton, (!image || loading) && styles.disabledButton]}
-        onPress={handlePost}
-        disabled={!image || loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <>
-            <Feather name="send" size={20} color="white" style={styles.sendIcon} />
-            <Text style={styles.postButtonText}>Publicar</Text>
-          </>
-        )}
-      </TouchableOpacity>
-    </SafeAreaView>
+          <TextInput
+            style={styles.input}
+            placeholder="Escribe una descripción..."
+            placeholderTextColor="#666"
+            value={caption}
+            onChangeText={setCaption}
+            multiline
+            maxLength={2200}
+          />
+
+          <TouchableOpacity
+            style={[styles.postButton, (!image || loading) && styles.disabledButton]}
+            onPress={handlePost}
+            disabled={!image || loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Feather name="send" size={20} color="white" style={styles.sendIcon} />
+                <Text style={styles.postButtonText}>Publicar</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </SafeAreaView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -209,12 +232,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   imageContainer: {
-    margin: 20,
-    aspectRatio: 1,
+    aspectRatio: 1, 
     backgroundColor: '#f5f5f5',
     borderRadius: 15,
     overflow: 'hidden',
     position: 'relative',
+    width: '80%', 
+    alignSelf: 'center', 
   },
   selectedImage: {
     width: '100%',
@@ -294,6 +318,12 @@ const styles = StyleSheet.create({
   },
   sendIcon: {
     marginRight: 8,
+  },
+  imageWrapper: {
+    justifyContent: 'center', // Centrar verticalmente dentro del contenedor padre
+    alignItems: 'center',    // Centrar horizontalmente
+    marginTop: 20,           // Ajustar separación del contenido superior
+    marginBottom: 20,        // Ajustar separación del contenido inferior
   },
 });
 
