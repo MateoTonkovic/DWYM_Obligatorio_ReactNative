@@ -1,26 +1,33 @@
+// screens/Main/ProfileScreen.js
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
+import ProfileComponent from '../../components/ProfileComponent';
 
 const ProfileScreen = () => {
-  const { logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // Ya no necesitamos hacer nada más aquí
-      // El AuthContext se encarga de todo
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
-  };
+  console.log('Usuario en ProfileScreen:', user); // Para debugging
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#BD61DE" />
+      </View>
+    );
+  }
+
+  if (!user || !user._id) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>No se pudo cargar el perfil.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Text>Profile Screen</Text>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Cerrar Sesión</Text>
-      </TouchableOpacity>
+      <ProfileComponent userId={user._id} isCurrentUser={true} onLogout={logout} />
     </View>
   );
 };
@@ -28,19 +35,25 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoutButton: {
-    backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  logoutText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 
+// Asegúrate de que esto esté al final del archivo
 export default ProfileScreen;
