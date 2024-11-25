@@ -25,33 +25,53 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
   const [refreshing, setRefreshing] = useState(false);
 
   const isUserFriend = useMemo(() => {
-    if (!profileData?.user) return false;
-    return profileData.user.friends.some(friend => friend._id === currentUser?._id);
-  }, [profileData, currentUser]);
+    if (!profileData?.user?.friends || !currentUser?._id) return false;
+    return profileData.user.friends.some(friend => friend._id === currentUser._id);
+  }, [profileData?.user?.friends, currentUser?._id]);
 
   const fetchProfileData = async () => {
+    // No intentar obtener datos si no hay userId o si no hay usuario actual
+    if (!userId || !currentUser) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await userService.getUserProfile(userId);
-      setProfileData(response);
+      if (response) {
+        setProfileData(response);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
-      Alert.alert('Error', 'No se pudo cargar el perfil');
+      if (!isCurrentUser) {
+        Alert.alert('Error', 'No se pudo cargar el perfil');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProfileData();
-  }, [userId]);
+    if (userId && currentUser) {
+      fetchProfileData();
+    } else {
+      setLoading(false);
+    }
+  }, [userId, currentUser]);
 
   const handleRefresh = async () => {
+    if (!userId || !currentUser) return;
     setRefreshing(true);
     await fetchProfileData();
     setRefreshing(false);
   };
 
   const handleFollowUser = async () => {
+    if (!currentUser) {
+      Alert.alert('Error', 'Debes iniciar sesión');
+      return;
+    }
+
     try {
       if (isUserFriend) {
         await userService.unfollowUser(userId);
@@ -60,7 +80,7 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
           user: {
             ...prevData.user,
             friends: prevData.user.friends.filter(
-              friend => friend._id !== currentUser?._id
+              friend => friend._id !== currentUser._id
             )
           }
         }));
@@ -70,12 +90,24 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
           ...prevData,
           user: {
             ...prevData.user,
-            friends: [...prevData.user.friends, { _id: currentUser?._id }]
+            friends: [...(prevData.user.friends || []), { _id: currentUser._id }]
           }
         }));
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudo realizar la acción');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setLoading(true);
+      await onLogout();
+    } catch (error) {
+      console.error('Error during logout:', error);
+      Alert.alert('Error', 'No se pudo cerrar sesión');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,6 +123,10 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
     </TouchableOpacity>
   );
 
+  if (!userId || !currentUser) {
+    return null;
+  }
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -99,7 +135,7 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
     );
   }
 
-  if (!profileData) {
+  if (!profileData?.user) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>No se encontró el usuario</Text>
@@ -157,7 +193,7 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
             
             <TouchableOpacity 
               style={styles.logoutButton}
-              onPress={onLogout}
+              onPress={handleLogout}
             >
               <Text style={styles.buttonText}>Cerrar Sesión</Text>
             </TouchableOpacity>

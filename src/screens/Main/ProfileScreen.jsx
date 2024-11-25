@@ -7,6 +7,9 @@ import ProfileComponent from '../../components/ProfileComponent';
 const ProfileScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
 
+  if (!user) 
+    return null;
+
   return (
     <View style={styles.container}>
       <ProfileComponent 

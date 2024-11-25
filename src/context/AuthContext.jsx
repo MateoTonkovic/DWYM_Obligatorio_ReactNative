@@ -7,14 +7,13 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null); // Estado para el usuario
+  const [user, setUser] = useState(null);
 
   const checkToken = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       const userData = await AsyncStorage.getItem('userData');
-      console.log('Stored userData:', userData); // Debugging
-
+      console.log('Stored userData:', userData);
       if (token && userData) {
         setUser(JSON.parse(userData));
         setIsAuthenticated(true);
@@ -28,35 +27,54 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (data) => {
     try {
-      console.log('Login data received:', data); // Debugging
-      
-      const { token, ...userInfo } = data; // Separamos el token del resto de la información
+      console.log('Login data received:', data);
 
-      // Guardamos el token
+      const { token, ...userInfo } = data;
       await AsyncStorage.setItem('token', token);
-      
-      // Guardamos la información del usuario
       await AsyncStorage.setItem('userData', JSON.stringify(userInfo));
-      
-      // Actualizamos el estado
+
       setUser(userInfo);
       setIsAuthenticated(true);
-      
-      console.log('User set in context:', userInfo); // Debugging
+
+      console.log('User set in context:', userInfo);
     } catch (error) {
       console.error('Error during login:', error);
       throw error;
     }
   };
 
+  const updateUserData = async (newUserData) => {
+    try {
+      console.log('Updating user data:', newUserData);
+
+      // Mantener los datos existentes del usuario y combinarlos con los nuevos
+      const updatedUser = {
+        ...user, // Mantener datos existentes como _id y email
+        ...newUserData // Sobrescribir con los nuevos datos
+      };
+
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+
+      console.log('User data updated successfully:', updatedUser);
+      return true;
+    } catch (error) {
+      console.error('Error updating user data:', error);
+      return false;
+    }
+  };
+
   const logout = async () => {
     try {
+      setIsLoading(true); // Opcional: mostrar loading mientras se procesa
       await AsyncStorage.clear();
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -65,10 +83,11 @@ export const AuthProvider = ({ children }) => {
       value={{
         isAuthenticated,
         isLoading,
-        user, // Exponemos el usuario en el contexto
+        user,
         login,
         logout,
         checkToken,
+        updateUserData, // Exponemos la nueva función
       }}
     >
       {children}

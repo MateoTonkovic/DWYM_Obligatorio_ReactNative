@@ -23,29 +23,44 @@ const EditProfileScreen = ({ navigation }) => {
   });
   const [loading, setLoading] = useState(false);
 
-  const handleSave = async () => {
+  const validateForm = () => {
     if (!form.username.trim()) {
       Alert.alert('Error', 'El nombre de usuario es requerido');
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
-      
+      console.log('Sending update with data:', form); // Debug log
+
       const updatedData = {
-        username: form.username,
-        description: form.description,
-        profilePicture: form.profilePicture
+        username: form.username.trim(),
+        description: form.description.trim(),
+        profilePicture: form.profilePicture.trim() || undefined // Solo enviamos si hay valor
       };
 
       const response = await userService.updateProfile(updatedData);
-      await updateUserData(response.user);
-      
-      Alert.alert('Éxito', 'Perfil actualizado correctamente', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ]);
+      console.log('Update response:', response); // Debug log
+
+      if (response && response.user) {
+        await updateUserData(response.user);
+        Alert.alert('Éxito', 'Perfil actualizado correctamente', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      } else {
+        throw new Error('Respuesta inválida del servidor');
+      }
     } catch (error) {
-      Alert.alert('Error', 'No se pudo actualizar el perfil');
+      console.error('Error al actualizar perfil:', error);
+      Alert.alert(
+        'Error', 
+        error.response?.data?.message || 'No se pudo actualizar el perfil. Por favor, intenta de nuevo.'
+      );
     } finally {
       setLoading(false);
     }
@@ -58,7 +73,7 @@ const EditProfileScreen = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
-          <Text style={styles.label}>Nombre de usuario</Text>
+          <Text style={styles.label}>Nombre de usuario *</Text>
           <TextInput
             style={styles.input}
             value={form.username}
@@ -74,6 +89,8 @@ const EditProfileScreen = ({ navigation }) => {
             onChangeText={(text) => setForm(prev => ({ ...prev, profilePicture: text }))}
             placeholder="https://ejemplo.com/tu-imagen.jpg"
             autoCapitalize="none"
+            keyboardType="url"
+            autoCorrect={false}
           />
 
           <Text style={styles.label}>Descripción</Text>
@@ -84,6 +101,7 @@ const EditProfileScreen = ({ navigation }) => {
             placeholder="Cuéntanos sobre ti..."
             multiline
             numberOfLines={4}
+            textAlignVertical="top"
           />
 
           <TouchableOpacity
@@ -146,6 +164,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  requiredField: {
+    color: '#ff0000',
+    fontSize: 14,
+    marginTop: -15,
+    marginBottom: 15,
+  }
 });
 
 export default EditProfileScreen;
