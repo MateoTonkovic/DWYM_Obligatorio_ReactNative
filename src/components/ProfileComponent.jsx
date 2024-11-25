@@ -112,15 +112,14 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation 
   };
 
   const renderPhoto = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.photoItem}
-      onPress={() => navigation.navigate('PostDetail', { postId: item._id })}
-    >
-      <Image
-        source={{ uri: `http://192.168.1.3:3000/${item.imageUrl}` }}
-        style={styles.photoImage}
-      />
-    </TouchableOpacity>
+    <View style={styles.photoItem}>
+      <View style={styles.photoBackground}>
+        <Image
+          source={{ uri: `http://192.168.1.3:3000/uploads/${item.imageUrl}` }}
+          style={styles.photoImage}
+        />
+      </View>
+    </View>
   );
 
   if (!userId || !currentUser) {
@@ -313,6 +312,11 @@ const styles = StyleSheet.create({
     width: PHOTO_SIZE,
     height: PHOTO_SIZE,
     margin: 1,
+  },
+  photoBackground: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f0f0f0', 
   },
   photoImage: {
     width: '100%',
