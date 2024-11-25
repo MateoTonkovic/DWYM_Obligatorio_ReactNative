@@ -19,6 +19,7 @@ import ProfileScreen from './screens/Main/ProfileScreen';
 
 // Other
 import UserProfileScreen from './screens/Other/UserProfileScreen';
+import EditProfileScreen from './screens/Other/EditProfileScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -106,10 +107,23 @@ function Navigation() {
         {isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
-            <Stack.Screen 
-            name='UserProfile' 
-            component={UserProfileScreen} 
-            options={{headerShown: true, headerTitle: 'Perfil'}}/>
+            <Stack.Screen
+              name='UserProfile'
+              component={UserProfileScreen}
+              options={{ headerShown: true, headerTitle: 'Perfil' }} />
+
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
+              options={{
+                headerShown: true,
+                headerTitle: 'Editar Perfil',
+                headerTintColor: '#000',
+                headerStyle: {
+                  backgroundColor: '#fff',
+                },
+              }}
+            />
           </>
         ) : (
           <>

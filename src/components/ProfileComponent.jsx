@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,39 +7,89 @@ import {
   Text,
   Image,
   TouchableOpacity,
+  ScrollView,
+  FlatList,
+  Dimensions,
+  RefreshControl
 } from 'react-native';
 import { userService } from '../services/user.service';
 import { useAuth } from '../context/AuthContext';
 
-const ProfileComponent = ({ userId, isCurrentUser = false, onLogout }) => {
+const { width } = Dimensions.get('window');
+const PHOTO_SIZE = width / 3 - 2;
+
+const ProfileComponent = ({ userId, isCurrentUser = false, onLogout, navigation }) => {
   const { user: currentUser } = useAuth();
-  const [profileUser, setProfileUser] = useState(null);
+  const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const isUserFriend = useMemo(() => {
+    if (!profileData?.user) return false;
+    return profileData.user.friends.some(friend => friend._id === currentUser?._id);
+  }, [profileData, currentUser]);
+
+  const fetchProfileData = async () => {
+    try {
+      const response = await userService.getUserProfile(userId);
+      setProfileData(response);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      Alert.alert('Error', 'No se pudo cargar el perfil');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (isCurrentUser) {
-          // Si es el usuario actual, usamos los datos del contexto
-          console.log('Usando datos del contexto para usuario actual:', currentUser);
-          setProfileUser(currentUser);
-          setLoading(false);
-        } else {
-          // Si es otro usuario, hacemos la llamada a la API
-          console.log('Fetching user profile for ID:', userId);
-          const userData = await userService.getUserProfile(userId);
-          setProfileUser(userData);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        Alert.alert('Error', 'No se pudo cargar el perfil');
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchProfileData();
+  }, [userId]);
 
-    fetchUser();
-  }, [userId, isCurrentUser, currentUser]);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchProfileData();
+    setRefreshing(false);
+  };
+
+  const handleFollowUser = async () => {
+    try {
+      if (isUserFriend) {
+        await userService.unfollowUser(userId);
+        setProfileData(prevData => ({
+          ...prevData,
+          user: {
+            ...prevData.user,
+            friends: prevData.user.friends.filter(
+              friend => friend._id !== currentUser?._id
+            )
+          }
+        }));
+      } else {
+        await userService.followUser(userId);
+        setProfileData(prevData => ({
+          ...prevData,
+          user: {
+            ...prevData.user,
+            friends: [...prevData.user.friends, { _id: currentUser?._id }]
+          }
+        }));
+      }
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo realizar la acción');
+    }
+  };
+
+  const renderPhoto = ({ item }) => (
+    <TouchableOpacity 
+      style={styles.photoItem}
+      onPress={() => navigation.navigate('PostDetail', { postId: item._id })}
+    >
+      <Image
+        source={{ uri: `http://192.168.1.3:3000/${item.imageUrl}` }}
+        style={styles.photoImage}
+      />
+    </TouchableOpacity>
+  );
 
   if (loading) {
     return (
@@ -49,7 +99,7 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout }) => {
     );
   }
 
-  if (!profileUser) {
+  if (!profileData) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>No se encontró el usuario</Text>
@@ -57,74 +107,180 @@ const ProfileComponent = ({ userId, isCurrentUser = false, onLogout }) => {
     );
   }
 
-  return (
-    <View style={styles.profileContainer}>
-      <Image
-        source={{ uri: profileUser.profilePicture || 'https://via.placeholder.com/150' }}
-        style={styles.profileImage}
-      />
-      <Text style={styles.username}>{profileUser.username}</Text>
-      <Text style={styles.email}>{profileUser.email}</Text>
+  const profileImageUrl = profileData.user.profilePicture || 
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.user.username.slice(0, 2))}&background=random`;
 
-      {isCurrentUser ? (
-        <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-          <Text style={styles.logoutText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity
-          style={[styles.followButton]}
-          onPress={() => Alert.alert('Info', 'Función de seguir en desarrollo')}
-        >
-          <Text style={styles.followText}>Seguir</Text>
-        </TouchableOpacity>
-      )}
-    </View>
+  return (
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+    >
+      <View style={styles.header}>
+        <View style={styles.profileInfo}>
+          <Image
+            source={{ uri: profileImageUrl }}
+            style={styles.profileImage}
+          />
+          
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{profileData.posts?.length || 0}</Text>
+              <Text style={styles.statLabel}>Posts</Text>
+            </View>
+            
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>
+                {profileData.user.friends?.length || 0}
+              </Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.bioSection}>
+          <Text style={styles.username}>{profileData.user.username}</Text>
+          {profileData.user.description && (
+            <Text style={styles.description}>{profileData.user.description}</Text>
+          )}
+        </View>
+
+        {isCurrentUser ? (
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={() => navigation.navigate('EditProfile')}
+            >
+              <Text style={styles.buttonText}>Editar Perfil</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.logoutButton}
+              onPress={onLogout}
+            >
+              <Text style={styles.buttonText}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.followButton,
+              isUserFriend && styles.followingButton
+            ]}
+            onPress={handleFollowUser}
+          >
+            <Text style={styles.buttonText}>
+              {isUserFriend ? 'Siguiendo' : 'Seguir'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.photosContainer}>
+        <FlatList
+          data={profileData.posts}
+          renderItem={renderPhoto}
+          keyExtractor={(item) => item._id}
+          numColumns={3}
+          scrollEnabled={false}
+        />
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  profileContainer: {
-    alignItems: 'center',
-    padding: 20,
+  container: {
+    flex: 1,
     backgroundColor: '#fff',
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 15,
+  header: {
+    padding: 20,
   },
-  username: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#BD61DE',
-  },
-  email: {
-    fontSize: 16,
-    color: '#666',
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
-  logoutButton: {
-    backgroundColor: '#ff4444',
-    padding: 10,
-    borderRadius: 5,
-    width: '60%',
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 20,
+  },
+  statsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
     alignItems: 'center',
   },
-  logoutText: {
-    color: '#fff',
+  statNumber: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#000',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  bioSection: {
+    marginBottom: 20,
+  },
+  username: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  description: {
+    fontSize: 14,
+    color: '#666',
+  },
+  buttonContainer: {
+    gap: 10,
+  },
+  editButton: {
+    backgroundColor: '#343434',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
   },
   followButton: {
     backgroundColor: '#BD61DE',
-    padding: 10,
-    borderRadius: 5,
-    width: '60%',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     alignItems: 'center',
   },
-  followText: {
+  followingButton: {
+    backgroundColor: '#343434',
+  },
+  logoutButton: {
+    backgroundColor: '#ff4444',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
+  },
+  photosContainer: {
+    padding: 1,
+  },
+  photoItem: {
+    width: PHOTO_SIZE,
+    height: PHOTO_SIZE,
+    margin: 1,
+  },
+  photoImage: {
+    width: '100%',
+    height: '100%',
   },
   loadingContainer: {
     flex: 1,

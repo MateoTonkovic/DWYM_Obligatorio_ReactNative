@@ -1,14 +1,17 @@
 // screens/Other/UserProfileScreen.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import ProfileComponent from '../../components/ProfileComponent';
 
-const UserProfileScreen = ({ route }) => {
+const UserProfileScreen = ({ route, navigation }) => {
     const { userId } = route.params;
-
     return (
         <View style={styles.container}>
-            <ProfileComponent userId={userId} isCurrentUser={false} />
+            <ProfileComponent 
+                userId={userId} 
+                isCurrentUser={false} 
+                navigation={navigation}
+            />
         </View>
     );
 };
