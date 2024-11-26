@@ -1,3 +1,4 @@
+// context/AuthContext.js
 import React, { createContext, useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -6,11 +7,17 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   const checkToken = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      setIsAuthenticated(!!token);
+      const userData = await AsyncStorage.getItem('userData');
+      console.log('Stored userData:', userData);
+      if (token && userData) {
+        setUser(JSON.parse(userData));
+        setIsAuthenticated(true);
+      }
     } catch (error) {
       console.error('Error checking token:', error);
     } finally {
@@ -18,37 +25,69 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (userData) => {
+  const login = async (data) => {
     try {
-      await AsyncStorage.setItem('token', userData.token);
-      Object.keys(userData).forEach(async (key) => {
-        await AsyncStorage.setItem(key, userData[key]);
-      });
+      console.log('Login data received:', data);
+
+      const { token, ...userInfo } = data;
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('userData', JSON.stringify(userInfo));
+
+      setUser(userInfo);
       setIsAuthenticated(true);
+
+      console.log('User set in context:', userInfo);
     } catch (error) {
       console.error('Error during login:', error);
       throw error;
     }
   };
 
+  const updateUserData = async (newUserData) => {
+    try {
+      console.log('Updating user data:', newUserData);
+
+      // Mantener los datos existentes del usuario y combinarlos con los nuevos
+      const updatedUser = {
+        ...user, // Mantener datos existentes como _id y email
+        ...newUserData // Sobrescribir con los nuevos datos
+      };
+
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+
+      console.log('User data updated successfully:', updatedUser);
+      return true;
+    } catch (error) {
+      console.error('Error updating user data:', error);
+      return false;
+    }
+  };
+
   const logout = async () => {
     try {
+      setIsLoading(true); // Opcional: mostrar loading mientras se procesa
       await AsyncStorage.clear();
+      setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
       console.error('Error during logout:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        isAuthenticated, 
-        isLoading, 
-        login, 
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        isLoading,
+        user,
+        login,
         logout,
-        checkToken 
+        checkToken,
+        updateUserData, // Exponemos la nueva función
       }}
     >
       {children}

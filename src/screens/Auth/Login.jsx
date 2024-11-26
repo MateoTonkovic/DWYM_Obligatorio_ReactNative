@@ -21,14 +21,15 @@ const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
-  
+
   // Referencias para los inputs
   const passwordInputRef = useRef(null);
-  
+
+  // En Login.jsx
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert(
-        'Campos requeridos', 
+        'Campos requeridos',
         'Por favor, completa todos los campos',
         [{ text: 'OK' }],
         { cancelable: true }
@@ -38,16 +39,22 @@ const Login = ({ navigation }) => {
 
     try {
       const response = await authService.loginUser({ email, password });
-      await login(response.data);
-      // Feedback táctil/sonoro de éxito
+      const userData = response.data;
+
+      console.log('Login response data:', userData); // Debugging
+
+      // No es necesario separar los datos, pasamos todo directamente
+      await login(userData);
+
       AccessibilityInfo.announceForAccessibility('Inicio de sesión exitoso');
     } catch (error) {
+      console.error('Error en login:', error);
+
       const errorMessage = error.response?.status === 401
         ? 'Credenciales incorrectas, por favor intenta de nuevo.'
         : 'Error en el inicio de sesión: ' + error.message;
-      
+
       Alert.alert('Error', errorMessage);
-      // Feedback para lectores de pantalla
       AccessibilityInfo.announceForAccessibility(errorMessage);
     }
   };
