@@ -278,10 +278,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   galleryButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: '#BD61DE',
   },
   cameraButton: {
-    backgroundColor: '#50C878',
+    backgroundColor: '#BD61DE',
   },
   buttonText: {
     color: 'white',
@@ -320,10 +320,10 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   imageWrapper: {
-    justifyContent: 'center', // Centrar verticalmente dentro del contenedor padre
-    alignItems: 'center',    // Centrar horizontalmente
-    marginTop: 20,           // Ajustar separación del contenido superior
-    marginBottom: 20,        // Ajustar separación del contenido inferior
+    justifyContent: 'center', 
+    alignItems: 'center',    
+    marginTop: 20,          
+    marginBottom: 20,        
   },
 });
 
