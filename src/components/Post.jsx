@@ -36,9 +36,11 @@ const Post = ({ post, onRefresh, navigation }) => {
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(post.comments || []);
 
+
   const handleUserPress = () => {
     navigation.navigate("UserProfile", { userId: post.user._id });
   };
+
 
   // Función para formatear la URL de la imagen
   const formatImageUrl = useCallback((path) => {
@@ -46,6 +48,7 @@ const Post = ({ post, onRefresh, navigation }) => {
     if (path.startsWith("http")) return path;
     return `${API_URL}/${path.replace("\\", "/")}`;
   }, []);
+
 
   // Manejar likes
   const handleLike = async () => {
@@ -72,22 +75,26 @@ const Post = ({ post, onRefresh, navigation }) => {
       Alert.alert("Error", "No se pudo procesar el like");
     }
   };
-      
+  
 
   // Función para manejar el envío de un comentario
   const handleCommentSubmit = async () => {
     if (!commentText) return;
-
+  
     try {
       const newComment = await postService.addComment(post._id, commentText);
       const newComments = [
         ...comments,
         {
           ...newComment,
-          user: { _id: newComment.user, username: "Arreglar esto" },
-        }, // Guille: Arreglar username
+          user: {
+            _id: user._id, // Usa el usuario actual
+            username: user.username, // Usa el username del usuario actual
+          },
+        },
       ];
       setComments(newComments);
+      post.comments = newComments; // Actualiza directamente el objeto `post`
       setCommentText(""); // Limpia el campo de texto
     } catch (error) {
       console.error("Error al agregar comentario:", error.message);
@@ -97,13 +104,12 @@ const Post = ({ post, onRefresh, navigation }) => {
 
   //Funcion para eliminar un comentario
   const handleDeleteComment = async (commentId) => {
-    console.log("Post ID:", post._id);
-    console.log("Comment ID:", commentId);
     try {
       const success = await postService.removeComment(post._id, commentId);
       if (success) {
         const newComments = comments.filter((c) => c._id !== commentId);
         setComments(newComments);
+        post.comments = newComments; // Actualiza directamente el objeto `post`
       }
     } catch (error) {
       console.error(
@@ -123,10 +129,11 @@ const Post = ({ post, onRefresh, navigation }) => {
 
   // Tiempo transcurrido desde la publicación
   const getTimeAgo = (date) => {
-    if (!date) return "Fecha no disponible"; // Prevenir errores
+    if (!date || isNaN(new Date(date).getTime())) {
+      return "Fecha no disponible"; // Prevenir errores
+    }
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
     let interval = seconds / 31536000;
-
     if (interval > 1) return Math.floor(interval) + " años";
     interval = seconds / 2592000;
     if (interval > 1) return Math.floor(interval) + " meses";
@@ -173,15 +180,15 @@ const Post = ({ post, onRefresh, navigation }) => {
       {/* Acciones */}
       <View style={styles.actions}>
         <TouchableOpacity
-           onPress={isLiked ? handleRemoveLike : handleLike}  // Determina qué función llamar
-           style={styles.actionButton}
+          onPress={isLiked ? handleRemoveLike : handleLike} // Determina qué función llamar
+          style={styles.actionButton}
         >
           <Feather
-          name="heart"
-          size={24}
-          color={isLiked ? "#ff3b30" : "#000"}  // Cambia el color según el estado de "like"
-          style={isLiked ? styles.likedHeart : null}
-        />
+            name="heart"
+            size={24}
+            color={isLiked ? "#ff3b30" : "#000"} // Cambia el color según el estado de "like"
+            style={isLiked ? styles.likedHeart : null}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -226,8 +233,8 @@ const Post = ({ post, onRefresh, navigation }) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalContainer}>
             <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
-              keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}  // Asegurarse de que la vista no quede oculta por el teclado en iOS
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}  // Ajuste de la altura para iOS y Android
               style={styles.avoidingView}
             >
               <View style={styles.modalContent}>
@@ -240,7 +247,7 @@ const Post = ({ post, onRefresh, navigation }) => {
                 </View>
 
                 {/* Lista de comentarios */}
-                <ScrollView contentContainerStyle={styles.commentsContainer}>
+                <ScrollView contentContainerStyle={styles.commentsContainer}> 
                   {comments.map((comment) => (
                     <TouchableOpacity
                       key={comment._id}
@@ -278,7 +285,7 @@ const Post = ({ post, onRefresh, navigation }) => {
                           {comment.content}
                         </Text>
                         <Text style={styles.commentTime}>
-                          {getTimeAgo(comment.createdAt)}
+                          {getTimeAgo(comment.createdAt)} {/*Funciona cuando recien se crea un comment, pero al recargar la pag se rompe}*/} 
                         </Text>
                       </View>
                     </TouchableOpacity>
@@ -297,7 +304,7 @@ const Post = ({ post, onRefresh, navigation }) => {
                     onPress={handleCommentSubmit}
                     style={styles.addCommentButton}
                   >
-                    <Feather name="send" size={24} color="#fff" />
+                    <Feather name="send" size={24} color="black" />
                   </TouchableOpacity>
                 </View>
               </View>
