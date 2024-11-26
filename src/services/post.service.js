@@ -2,7 +2,9 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
+
 const API_URL = 'http://192.168.8.101:3000/api';
+
 
 const getAuthHeader = async () => {
   const token = await AsyncStorage.getItem('token');
@@ -62,6 +64,8 @@ const sendPost = async (imageUri, caption) => {
   }
 };
 
+
+// Dar me gusta a un post
 const likePost = async (postId) => {
   try {
     const headers = await getAuthHeader();
@@ -75,6 +79,8 @@ const likePost = async (postId) => {
   }
 };
 
+
+//Eliminar like
 const removeLike = async (postId) => {
   try {
     const headers = await getAuthHeader();
@@ -86,9 +92,43 @@ const removeLike = async (postId) => {
   }
 };
 
+// Agregar comentario a un post
+const addComment = async (postId, content) => {
+  try {
+    const headers = await getAuthHeader();  // Asegúrate de que getAuthHeader esté implementado
+    const response = await axios.post(
+      `${API_URL}/posts/${postId}/comments`,
+      { content },
+      { headers }
+    );
+    console.log(response.data);
+    return response.data; // Asume que la respuesta contiene el nuevo comentario
+  } catch (error) {
+    console.error('Error al agregar comentario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al agregar comentario');
+  }
+};
+
+//Eliminar comentario de un post
+const removeComment = async (postId, commentId) => {
+  try {
+    const headers = await getAuthHeader();
+    const response = await axios.delete(
+      `${API_URL}/posts/${postId}/comments/${commentId}`,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error al eliminar comentario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al eliminar comentario');
+  }
+};
+
 export const postService = {
   fetchFeed,
   sendPost,
+  addComment,
   likePost,
   removeLike,
+  removeComment
 };
