@@ -11,11 +11,16 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './screens/Auth/Login';
 import Register from './screens/Auth/Register';
 
+
 // Main Screens
 import HomeScreen from './screens/Main/HomeScreen';
 import SearchScreen from './screens/Main/SearchScreen';
 import CreatePostScreen from './screens/Main/CreatePostScreen';
 import ProfileScreen from './screens/Main/ProfileScreen';
+
+// Other
+import UserProfileScreen from './screens/Other/UserProfileScreen';
+import EditProfileScreen from './screens/Other/EditProfileScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -103,7 +108,26 @@ function Navigation() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="MainTabs" component={TabNavigator} />
+          <>
+            <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen
+              name='UserProfile'
+              component={UserProfileScreen}
+              options={{ headerShown: true, headerTitle: 'Perfil' }} />
+
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
+              options={{
+                headerShown: true,
+                headerTitle: 'Editar Perfil',
+                headerTintColor: '#000',
+                headerStyle: {
+                  backgroundColor: '#fff',
+                },
+              }}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen name="Login" component={Login} />

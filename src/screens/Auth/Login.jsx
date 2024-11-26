@@ -21,14 +21,15 @@ const Login = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
-  
+
   // Referencias para los inputs
   const passwordInputRef = useRef(null);
-  
+
+  // En Login.jsx
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert(
-        'Campos requeridos', 
+        'Campos requeridos',
         'Por favor, completa todos los campos',
         [{ text: 'OK' }],
         { cancelable: true }
@@ -38,46 +39,53 @@ const Login = ({ navigation }) => {
 
     try {
       const response = await authService.loginUser({ email, password });
-      await login(response.data);
-      // Feedback táctil/sonoro de éxito
+      const userData = response.data;
+
+      console.log('Login response data:', userData); // Debugging
+
+      // No es necesario separar los datos, pasamos todo directamente
+      await login(userData);
+
       AccessibilityInfo.announceForAccessibility('Inicio de sesión exitoso');
     } catch (error) {
+      console.error('Error en login:', error);
+
       const errorMessage = error.response?.status === 401
         ? 'Credenciales incorrectas, por favor intenta de nuevo.'
         : 'Error en el inicio de sesión: ' + error.message;
-      
+
       Alert.alert('Error', errorMessage);
-      // Feedback para lectores de pantalla
       AccessibilityInfo.announceForAccessibility(errorMessage);
     }
   };
 
   return (
+    // Detectar cuando el usuario toca fuera de los campos de entrada para ocultar el teclado
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}  // Asegurarse de que la vista no quede oculta por el teclado en iOS
         style={styles.container}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 20}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 20}  // Ajuste de la altura para iOS y Android
       >
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"  // Asegura que el teclado se oculte si se toca fuera
+          showsVerticalScrollIndicator={false}  // Deshabilitar la visualización del indicador de desplazamiento
         >
           <View style={styles.logoContainer}>
             <Image
               source={require('../../../assets/logo.png')}
               style={styles.logo}
               resizeMode="contain"
-              accessible={true}
-              accessibilityLabel="Logo de la aplicación"
+              accessible={true}  // Hacer accesible para lectores de pantalla
+              accessibilityLabel="Logo de la aplicación"  // Descripción para lectores de pantalla
             />
             <Image
               source={require('../../../assets/fakestagram.png')}
               style={styles.fakestagramLogo}
               resizeMode="contain"
-              accessible={true}
-              accessibilityLabel="Fakestagram"
+              accessible={true}  // Hacer accesible para lectores de pantalla
+              accessibilityLabel="Fakestagram"  // Descripción para lectores de pantalla
             />
           </View>
 
@@ -88,16 +96,16 @@ const Login = ({ navigation }) => {
             <TextInput
               style={styles.input}
               value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              returnKeyType="next"
-              onSubmitEditing={() => passwordInputRef.current?.focus()}
-              accessible={true}
-              accessibilityLabel="Campo de correo electrónico"
-              accessibilityHint="Introduce tu correo electrónico para iniciar sesión"
-              accessibilityLabelledBy="emailLabel"
+              onChangeText={setEmail}  // Actualizar el estado del correo electrónico
+              keyboardType="email-address"  // Configurar el teclado para dirección de correo electrónico
+              autoCapitalize="none"  // No autocompletar la primera letra en mayúsculas
+              autoComplete="email"  // Sugerir correos electrónicos previamente usados
+              returnKeyType="next"  // Establecer la tecla para mover al siguiente campo
+              onSubmitEditing={() => passwordInputRef.current?.focus()}  // Foco automático al siguiente campo (contraseña)
+              accessible={true}  // Accesibilidad para lectores de pantalla
+              accessibilityLabel="Campo de correo electrónico"  // Descripción para el campo
+              accessibilityHint="Introduce tu correo electrónico para iniciar sesión"  // Sugerencia accesible
+              accessibilityLabelledBy="emailLabel"  // Asociar la etiqueta con este campo
               placeholder="ejemplo@correo.com"
               placeholderTextColor="#666"
             />
@@ -109,25 +117,25 @@ const Login = ({ navigation }) => {
               ref={passwordInputRef}
               style={styles.input}
               value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              returnKeyType="done"
-              onSubmitEditing={handleLogin}
-              accessible={true}
-              accessibilityLabel="Campo de contraseña"
-              accessibilityHint="Introduce tu contraseña para iniciar sesión"
-              accessibilityLabelledBy="passwordLabel"
+              onChangeText={setPassword}  // Actualizar el estado de la contraseña
+              secureTextEntry  // Mostrar como texto oculto
+              returnKeyType="done"  // Configurar el teclado para completar el formulario
+              onSubmitEditing={handleLogin}  // Llamar a la función de inicio de sesión al presionar "done"
+              accessible={true}  // Hacer accesible para lectores de pantalla
+              accessibilityLabel="Campo de contraseña"  // Descripción para el campo
+              accessibilityHint="Introduce tu contraseña para iniciar sesión"  // Sugerencia accesible
+              accessibilityLabelledBy="passwordLabel"  // Asociar la etiqueta con este campo
               placeholder="Contraseña"
               placeholderTextColor="#666"
             />
 
             <TouchableOpacity
               style={styles.loginButton}
-              onPress={handleLogin}
-              accessible={true}
-              accessibilityLabel="Botón de inicio de sesión"
-              accessibilityHint="Toca para iniciar sesión con tus credenciales"
-              accessibilityRole="button"
+              onPress={handleLogin}  // Llamar a la función de inicio de sesión al presionar
+              accessible={true}  // Hacer accesible para lectores de pantalla
+              accessibilityLabel="Botón de inicio de sesión"  // Descripción para el botón
+              accessibilityHint="Toca para iniciar sesión con tus credenciales"  // Sugerencia accesible
+              accessibilityRole="button"  // Indicar que es un botón
             >
               <Text style={styles.loginButtonText}>Iniciar sesión</Text>
             </TouchableOpacity>
@@ -137,10 +145,10 @@ const Login = ({ navigation }) => {
                 ¿No tienes cuenta?{' '}
                 <Text
                   style={styles.registerLink}
-                  onPress={() => navigation.navigate('Register')}
-                  accessible={true}
-                  accessibilityRole="link"
-                  accessibilityHint="Navega a la pantalla de registro"
+                  onPress={() => navigation.navigate('Register')}  // Navegar a la pantalla de registro
+                  accessible={true}  // Hacer accesible para lectores de pantalla
+                  accessibilityRole="link"  // Indicar que es un enlace
+                  accessibilityHint="Navega a la pantalla de registro"  // Sugerencia accesible para el enlace
                 >
                   Regístrate aquí
                 </Text>

@@ -13,7 +13,7 @@ import { postService } from '../../services/post.service';
 import { useAuth } from '../../context/AuthContext';
 import Post from '../../components/Post';
 
-const HomeScreen = () => {
+const HomeScreen = ( {navigation}) => {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -106,6 +106,7 @@ const HomeScreen = () => {
             post={item}
             onLike={(shouldLike) => handleLikePost(item._id, shouldLike)}
             currentUserId={user?._id}
+            nagitation={navigation}
           />
         )}
         refreshControl={
