@@ -1,7 +1,9 @@
 // services/user.service.js
+
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { envs } from "../config/envs";
+
 
 const getAuthHeader = async () => {
   const token = await AsyncStorage.getItem("token");

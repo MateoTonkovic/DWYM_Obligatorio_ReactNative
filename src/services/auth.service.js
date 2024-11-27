@@ -1,5 +1,10 @@
 import axios from "axios";
+
+
+const API_URL = 'http://192.168.1.3:3001/api';
+
 import { envs } from "../config/envs";
+
 
 const instance = axios.create({
   baseURL: envs.apiUrl,
