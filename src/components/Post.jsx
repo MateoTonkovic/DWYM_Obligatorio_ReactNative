@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,40 +15,29 @@ import {
   Keyboard,
   ScrollView,
 } from "react-native";
-
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import {
-  addComment,
-  postService,
-  likePost,
-  removeComment,
-  removeLike,
-} from "../services/post.service";
+import { postService } from "../services/post.service";
+import { envs } from "../config/envs";
 
-const API_URL = "http://192.168.8.101:3000";
-
-const Post = ({ post, onRefresh, navigation }) => {
+const Post = ({ post, navigation }) => {
   const { user } = useAuth();
-  const [isLiked, setisLiked] = useState(false);
+  const [isLiked, setisLiked] = useState(post.likes.includes(user._id));
   const [likeCount, setLikeCount] = useState(post.likes.length || 0);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(post.comments || []);
 
-
   const handleUserPress = () => {
     navigation.navigate("UserProfile", { userId: post.user._id });
   };
-
 
   // Función para formatear la URL de la imagen
   const formatImageUrl = useCallback((path) => {
     if (!path) return null;
     if (path.startsWith("http")) return path;
-    return `${API_URL}/${path.replace("\\", "/")}`;
+    return `${envs.apiUrl}/${path.replace("\\", "/")}`;
   }, []);
-
 
   // Manejar likes
   const handleLike = async () => {
@@ -75,7 +64,6 @@ const Post = ({ post, onRefresh, navigation }) => {
       Alert.alert("Error", "No se pudo procesar el like");
     }
   };
-
 
   // Función para manejar el envío de un comentario
   const handleCommentSubmit = async () => {
@@ -233,64 +221,60 @@ const Post = ({ post, onRefresh, navigation }) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalContainer}>
             <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
+              behavior={Platform.OS === "ios" ? "padding" : "height"} // Asegurarse de que la vista no quede oculta por el teclado en iOS
+              keyboardVerticalOffset={Platform.OS === "ios" ? 50 : 0} // Ajuste de la altura para iOS y Android
+              style={styles.avoidingView}
             >
-              <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                <View style={styles.modalContent}>
-                  {/* Header */}
-                  <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>Comentarios</Text>
-                    <TouchableOpacity onPress={() => setShowCommentInput(false)}>
-                      <Feather name="x" size={24} color="#000" />
-                    </TouchableOpacity>
-                  </View>
+              <View style={styles.modalContent}>
+                {/* Header */}
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Comentarios</Text>
+                  <TouchableOpacity onPress={() => setShowCommentInput(false)}>
+                    <Feather name="x" size={24} color="#000" />
+                  </TouchableOpacity>
+                </View>
 
-                  {/* Lista de comentarios */}
-                  <View style={styles.commentsContainer}>
-                    {comments.map((comment) => (
-                      <TouchableOpacity
-                        key={comment._id}
-                        style={styles.commentItem}
-                        onLongPress={() => {
-                          Alert.alert(
-                            "Eliminar comentario",
-                            "¿Estás seguro de que quieres eliminar este comentario?",
-                            [
-                              { text: "Cancelar", style: "cancel" },
-                              {
-                                text: "Eliminar",
-                                style: "destructive",
-                                onPress: () => handleDeleteComment(comment._id),
-                              },
-                            ]
-                          );
+                {/* Lista de comentarios */}
+                <ScrollView contentContainerStyle={styles.commentsContainer}>
+                  {comments.map((comment) => (
+                    <TouchableOpacity
+                      key={comment._id}
+                      style={styles.commentItem}
+                      onLongPress={() => {
+                        Alert.alert(
+                          "Eliminar comentario",
+                          "¿Estás seguro de que quieres eliminar este comentario?",
+                          [
+                            { text: "Cancelar", style: "cancel" },
+                            {
+                              text: "Eliminar",
+                              style: "destructive",
+                              onPress: () => handleDeleteComment(comment._id), // Llama a la función para eliminar el comentario
+                            },
+                          ]
+                        );
+                      }}
+                    >
+                      <Image
+                        source={{
+                          uri:
+                            formatImageUrl(comment.user?.profilePicture) ||
+                            `https://ui-avatars.com/api/?name=${comment.user?.username?.charAt(
+                              0
+                            )}&background=random`,
                         }}
-                      >
-                        <Image
-                          source={{
-                            uri:
-                              formatImageUrl(comment.user?.profilePicture) ||
-                              `https://ui-avatars.com/api/?name=${comment.user?.username?.charAt(
-                                0
-                              )}&background=random`,
-                          }}
-                          style={styles.commentAvatar}
-                        />
-                        <View style={styles.commentContent}>
-                          <Text style={styles.commentUsername}>
-                            {comment.user?.username}
-                          </Text>
-                          <Text style={styles.commentText}>
-                            {comment.content}
-                          </Text>
-                          <Text style={styles.commentTime}>
-                            {getTimeAgo(comment.createdAt)}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                        style={styles.commentAvatar}
+                      />
+                      <View style={styles.commentContent}>
+                        <Text style={styles.commentUsername}>
+                          {comment.user?.username}
+                        </Text>
+                        <Text style={styles.commentText}>
+                          {comment.content}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
 
                   {/* Input para nuevo comentario */}
                   <View style={styles.newCommentContainer}>
@@ -307,13 +291,12 @@ const Post = ({ post, onRefresh, navigation }) => {
                       <Feather name="send" size={24} color="black" />
                     </TouchableOpacity>
                   </View>
-                </View>
-              </ScrollView>
+                </ScrollView>
+              </View>
             </KeyboardAvoidingView>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-
     </View>
   );
 };
@@ -436,10 +419,7 @@ const styles = StyleSheet.create({
   commentText: {
     marginBottom: 2,
   },
-  commentTime: {
-    fontSize: 12,
-    color: "#666",
-  },
+
   newCommentContainer: {
     flexDirection: "row",
     alignItems: "center",

@@ -1,9 +1,8 @@
 import axios from "axios";
-
-const API_URL = 'http://192.168.8.101:3000/api';
+import { envs } from "../config/envs";
 
 const instance = axios.create({
-  baseURL: API_URL,
+  baseURL: envs.apiUrl,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -28,7 +27,7 @@ instance.interceptors.response.use(
 // Servicio para buscar usuarios
 export const searchUsers = async (query) => {
   try {
-    const response = await axios.get(`${API_URL}/user/search`, {
+    const response = await axios.get(`${envs.apiUrl}/user/search`, {
       params: { query }, // Envía el término de búsqueda como parámetro
     });
     return response.data;
@@ -40,6 +39,7 @@ export const searchUsers = async (query) => {
 const loginUser = async (credentials) => {
   try {
     const response = await instance.post("/auth/login", credentials);
+    console.log(response);
     return response;
   } catch (error) {
     if (error.response && error.response.status === 401) {
