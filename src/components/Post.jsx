@@ -26,7 +26,7 @@ import {
   removeLike,
 } from "../services/post.service";
 
-const API_URL = "http://192.168.1.3:3000";
+const API_URL = "http://192.168.8.101:3000";
 
 const Post = ({ post, onRefresh, navigation }) => {
   const { user } = useAuth();
@@ -75,12 +75,12 @@ const Post = ({ post, onRefresh, navigation }) => {
       Alert.alert("Error", "No se pudo procesar el like");
     }
   };
-  
+
 
   // Función para manejar el envío de un comentario
   const handleCommentSubmit = async () => {
     if (!commentText) return;
-  
+
     try {
       const newComment = await postService.addComment(post._id, commentText);
       const newComments = [
@@ -233,85 +233,87 @@ const Post = ({ post, onRefresh, navigation }) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalContainer}>
             <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}  // Asegurarse de que la vista no quede oculta por el teclado en iOS
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}  // Ajuste de la altura para iOS y Android
-              style={styles.avoidingView}
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
             >
-              <View style={styles.modalContent}>
-                {/* Header */}
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Comentarios</Text>
-                  <TouchableOpacity onPress={() => setShowCommentInput(false)}>
-                    <Feather name="x" size={24} color="#000" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Lista de comentarios */}
-                <ScrollView contentContainerStyle={styles.commentsContainer}> 
-                  {comments.map((comment) => (
-                    <TouchableOpacity
-                      key={comment._id}
-                      style={styles.commentItem}
-                      onLongPress={() => {
-                        Alert.alert(
-                          "Eliminar comentario",
-                          "¿Estás seguro de que quieres eliminar este comentario?",
-                          [
-                            { text: "Cancelar", style: "cancel" },
-                            {
-                              text: "Eliminar",
-                              style: "destructive",
-                              onPress: () => handleDeleteComment(comment._id), // Llama a la función para eliminar el comentario
-                            },
-                          ]
-                        );
-                      }}
-                    >
-                      <Image
-                        source={{
-                          uri:
-                            formatImageUrl(comment.user?.profilePicture) ||
-                            `https://ui-avatars.com/api/?name=${comment.user?.username?.charAt(
-                              0
-                            )}&background=random`,
-                        }}
-                        style={styles.commentAvatar}
-                      />
-                      <View style={styles.commentContent}>
-                        <Text style={styles.commentUsername}>
-                          {comment.user?.username}
-                        </Text>
-                        <Text style={styles.commentText}>
-                          {comment.content}
-                        </Text>
-                        <Text style={styles.commentTime}>
-                          {getTimeAgo(comment.createdAt)} {/*Funciona cuando recien se crea un comment, pero al recargar la pag se rompe}*/} 
-                        </Text>
-                      </View>
+              <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                <View style={styles.modalContent}>
+                  {/* Header */}
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Comentarios</Text>
+                    <TouchableOpacity onPress={() => setShowCommentInput(false)}>
+                      <Feather name="x" size={24} color="#000" />
                     </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                  </View>
 
-                {/* Input para nuevo comentario */}
-                <View style={styles.newCommentContainer}>
-                  <TextInput
-                    style={styles.commentInput}
-                    placeholder="Añade un comentario..."
-                    value={commentText}
-                    onChangeText={setCommentText}
-                  />
-                  <TouchableOpacity
-                    onPress={handleCommentSubmit}
-                    style={styles.addCommentButton}
-                  >
-                    <Feather name="send" size={24} color="black" />
-                  </TouchableOpacity>
+                  {/* Lista de comentarios */}
+                  <View style={styles.commentsContainer}>
+                    {comments.map((comment) => (
+                      <TouchableOpacity
+                        key={comment._id}
+                        style={styles.commentItem}
+                        onLongPress={() => {
+                          Alert.alert(
+                            "Eliminar comentario",
+                            "¿Estás seguro de que quieres eliminar este comentario?",
+                            [
+                              { text: "Cancelar", style: "cancel" },
+                              {
+                                text: "Eliminar",
+                                style: "destructive",
+                                onPress: () => handleDeleteComment(comment._id),
+                              },
+                            ]
+                          );
+                        }}
+                      >
+                        <Image
+                          source={{
+                            uri:
+                              formatImageUrl(comment.user?.profilePicture) ||
+                              `https://ui-avatars.com/api/?name=${comment.user?.username?.charAt(
+                                0
+                              )}&background=random`,
+                          }}
+                          style={styles.commentAvatar}
+                        />
+                        <View style={styles.commentContent}>
+                          <Text style={styles.commentUsername}>
+                            {comment.user?.username}
+                          </Text>
+                          <Text style={styles.commentText}>
+                            {comment.content}
+                          </Text>
+                          <Text style={styles.commentTime}>
+                            {getTimeAgo(comment.createdAt)}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  {/* Input para nuevo comentario */}
+                  <View style={styles.newCommentContainer}>
+                    <TextInput
+                      style={styles.commentInput}
+                      placeholder="Añade un comentario..."
+                      value={commentText}
+                      onChangeText={setCommentText}
+                    />
+                    <TouchableOpacity
+                      onPress={handleCommentSubmit}
+                      style={styles.addCommentButton}
+                    >
+                      <Feather name="send" size={24} color="black" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
+              </ScrollView>
             </KeyboardAvoidingView>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
     </View>
   );
 };
