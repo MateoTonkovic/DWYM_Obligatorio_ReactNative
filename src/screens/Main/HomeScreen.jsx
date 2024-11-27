@@ -106,7 +106,7 @@ const HomeScreen = ( {navigation}) => {
             post={item}
             onLike={(shouldLike) => handleLikePost(item._id, shouldLike)}
             currentUserId={user?._id}
-            nagitation={navigation}
+            navigation={navigation}
           />
         )}
         refreshControl={
