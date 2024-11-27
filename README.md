@@ -5,6 +5,18 @@ A continuación, encontrarás una guía rápida sobre cómo utilizar las princip
 
 ---
 
+Para ejecutar el proyecto es necesario:
+
+- Tener instalado Expo en tu sistema.
+- Tener instalado Node.js en tu sistema.
+- Tener instalado un emulador de Android o iOS en tu sistema.
+- Tener a disposición la api donde se encuentra la lógica de la aplicación.
+- Ingresar el path de la api la variable "API_URL", en la propiedad "extra" en el archivo "app.json" que se encuentra en la raíz del proyecto.
+- Ejecutar el comando `npm install` para instalar las dependencias del proyecto.
+- Ejecutar el comando `npm run start` para iniciar el proyecto.
+
+---
+
 ## Funcionalidades
 
 ### Registro (`Register`)

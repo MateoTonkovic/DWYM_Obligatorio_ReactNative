@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,40 +15,29 @@ import {
   Keyboard,
   ScrollView,
 } from "react-native";
-
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import {
-  addComment,
-  postService,
-  likePost,
-  removeComment,
-  removeLike,
-} from "../services/post.service";
+import { postService } from "../services/post.service";
+import { envs } from "../config/envs";
 
-const API_URL = "http://192.168.1.3:3000";
-
-const Post = ({ post, onRefresh, navigation }) => {
+const Post = ({ post, navigation }) => {
   const { user } = useAuth();
-  const [isLiked, setisLiked] = useState(false);
+  const [isLiked, setisLiked] = useState(post.likes.includes(user._id));
   const [likeCount, setLikeCount] = useState(post.likes.length || 0);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(post.comments || []);
 
-
   const handleUserPress = () => {
     navigation.navigate("UserProfile", { userId: post.user._id });
   };
-
 
   // Función para formatear la URL de la imagen
   const formatImageUrl = useCallback((path) => {
     if (!path) return null;
     if (path.startsWith("http")) return path;
-    return `${API_URL}/${path.replace("\\", "/")}`;
+    return `${envs.apiUrl}/${path.replace("\\", "/")}`;
   }, []);
-
 
   // Manejar likes
   const handleLike = async () => {
@@ -75,12 +64,11 @@ const Post = ({ post, onRefresh, navigation }) => {
       Alert.alert("Error", "No se pudo procesar el like");
     }
   };
-  
 
   // Función para manejar el envío de un comentario
   const handleCommentSubmit = async () => {
     if (!commentText) return;
-  
+
     try {
       const newComment = await postService.addComment(post._id, commentText);
       const newComments = [
@@ -233,8 +221,8 @@ const Post = ({ post, onRefresh, navigation }) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalContainer}>
             <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}  // Asegurarse de que la vista no quede oculta por el teclado en iOS
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}  // Ajuste de la altura para iOS y Android
+              behavior={Platform.OS === "ios" ? "padding" : "height"} // Asegurarse de que la vista no quede oculta por el teclado en iOS
+              keyboardVerticalOffset={Platform.OS === "ios" ? 50 : 0} // Ajuste de la altura para iOS y Android
               style={styles.avoidingView}
             >
               <View style={styles.modalContent}>
@@ -247,7 +235,7 @@ const Post = ({ post, onRefresh, navigation }) => {
                 </View>
 
                 {/* Lista de comentarios */}
-                <ScrollView contentContainerStyle={styles.commentsContainer}> 
+                <ScrollView contentContainerStyle={styles.commentsContainer}>
                   {comments.map((comment) => (
                     <TouchableOpacity
                       key={comment._id}
@@ -285,7 +273,8 @@ const Post = ({ post, onRefresh, navigation }) => {
                           {comment.content}
                         </Text>
                         <Text style={styles.commentTime}>
-                          {getTimeAgo(comment.createdAt)} {/*Funciona cuando recien se crea un comment, pero al recargar la pag se rompe}*/} 
+                          {getTimeAgo(comment.createdAt)}{" "}
+                          {/*Funciona cuando recien se crea un comment, pero al recargar la pag se rompe}*/}
                         </Text>
                       </View>
                     </TouchableOpacity>
