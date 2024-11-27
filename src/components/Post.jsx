@@ -272,30 +272,26 @@ const Post = ({ post, navigation }) => {
                         <Text style={styles.commentText}>
                           {comment.content}
                         </Text>
-                        <Text style={styles.commentTime}>
-                          {getTimeAgo(comment.createdAt)}{" "}
-                          {/*Funciona cuando recien se crea un comment, pero al recargar la pag se rompe}*/}
-                        </Text>
                       </View>
                     </TouchableOpacity>
                   ))}
-                </ScrollView>
 
-                {/* Input para nuevo comentario */}
-                <View style={styles.newCommentContainer}>
-                  <TextInput
-                    style={styles.commentInput}
-                    placeholder="Añade un comentario..."
-                    value={commentText}
-                    onChangeText={setCommentText}
-                  />
-                  <TouchableOpacity
-                    onPress={handleCommentSubmit}
-                    style={styles.addCommentButton}
-                  >
-                    <Feather name="send" size={24} color="black" />
-                  </TouchableOpacity>
-                </View>
+                  {/* Input para nuevo comentario */}
+                  <View style={styles.newCommentContainer}>
+                    <TextInput
+                      style={styles.commentInput}
+                      placeholder="Añade un comentario..."
+                      value={commentText}
+                      onChangeText={setCommentText}
+                    />
+                    <TouchableOpacity
+                      onPress={handleCommentSubmit}
+                      style={styles.addCommentButton}
+                    >
+                      <Feather name="send" size={24} color="black" />
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
               </View>
             </KeyboardAvoidingView>
           </View>
@@ -423,10 +419,7 @@ const styles = StyleSheet.create({
   commentText: {
     marginBottom: 2,
   },
-  commentTime: {
-    fontSize: 12,
-    color: "#666",
-  },
+
   newCommentContainer: {
     flexDirection: "row",
     alignItems: "center",
