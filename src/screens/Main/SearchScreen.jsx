@@ -10,27 +10,31 @@ import {
 } from "react-native";
 import { searchUsers } from "../../services/search.service";
 
-
 const SearchScreen = () => {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState(""); // Guarda el texto de la búsqueda
+  const [results, setResults] = useState([]); // Almacena los resultados
+  const [loading, setLoading] = useState(false); // Estado de carga
+  const [error, setError] = useState(""); // Almacena errores
 
+  // Maneja la búsqueda de usuarios
   const handleSearch = async () => {
-    setLoading(true);
+    setLoading(true); // Activa el estado de carga
+    setError(""); // Limpia errores previos
     try {
       const users = await searchUsers(query); // Llama al servicio de búsqueda
       setResults(users); // Actualiza los resultados
     } catch (error) {
-      console.error(error.message);
+      setError("No se pudo realizar la búsqueda. Intenta nuevamente.");
     } finally {
-      setLoading(false);
+      setLoading(false); // Desactiva el estado de carga
     }
   };
 
+  // Renderiza cada elemento en la lista de resultados
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.item}>
       <Text style={styles.username}>{item.username}</Text>
+      <Text style={styles.email}>{item.email}</Text>
     </TouchableOpacity>
   );
 
@@ -41,16 +45,17 @@ const SearchScreen = () => {
         style={styles.input}
         placeholder="Escribe el nombre del usuario"
         value={query}
-        onChangeText={(text) => setQuery(text)}
+        onChangeText={(text) => setQuery(text)} // Actualiza el texto de búsqueda
       />
       <Button title="Buscar" onPress={handleSearch} disabled={loading} />
+      {error && <Text style={styles.error}>{error}</Text>} {/* Muestra errores */}
       {loading ? (
-        <Text>Cargando...</Text>
+        <Text>Cargando...</Text> // Muestra un indicador de carga
       ) : (
         <FlatList
-          data={results}
-          keyExtractor={(item) => item._id} // Asegúrate de que los documentos tengan un campo `_id`
-          renderItem={renderItem}
+          data={results} // Datos a renderizar
+          keyExtractor={(item) => item._id} // Clave única para cada elemento
+          renderItem={renderItem} // Renderiza cada elemento
         />
       )}
     </View>
@@ -82,6 +87,15 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 18,
+    fontWeight: "bold",
+  },
+  email: {
+    fontSize: 14,
+    color: "#666",
+  },
+  error: {
+    color: "red",
+    marginTop: 10,
   },
 });
 
