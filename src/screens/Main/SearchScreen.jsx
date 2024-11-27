@@ -8,34 +8,50 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { searchUsers } from "../../services/search.service";
+import { searchUsers, followUser } from "../../services/search.service";
 
 const SearchScreen = () => {
   const [query, setQuery] = useState(""); // Guarda el texto de la búsqueda
   const [results, setResults] = useState([]); // Almacena los resultados
   const [loading, setLoading] = useState(false); // Estado de carga
   const [error, setError] = useState(""); // Almacena errores
+  const [followStatus, setFollowStatus] = useState(null); // Estado del seguimiento
 
   // Maneja la búsqueda de usuarios
   const handleSearch = async () => {
-    setLoading(true); // Activa el estado de carga
-    setError(""); // Limpia errores previos
+    setLoading(true);
+    setError("");
+    setFollowStatus(null);
     try {
-      const users = await searchUsers(query); // Llama al servicio de búsqueda
-      setResults(users); // Actualiza los resultados
+      const users = await searchUsers(query);
+      setResults(users);
     } catch (error) {
       setError("No se pudo realizar la búsqueda. Intenta nuevamente.");
     } finally {
-      setLoading(false); // Desactiva el estado de carga
+      setLoading(false);
+    }
+  };
+
+  // Maneja el seguimiento de un usuario
+  const handleFollow = async (userId) => {
+    try {
+      const response = await followUser(userId);
+      setFollowStatus(`¡Ahora sigues a ${response.message || "el usuario"}!`);
+    } catch (error) {
+      setFollowStatus("Error al intentar seguir al usuario.");
     }
   };
 
   // Renderiza cada elemento en la lista de resultados
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.item}>
-      <Text style={styles.username}>{item.username}</Text>
-      <Text style={styles.email}>{item.email}</Text>
-    </TouchableOpacity>
+    <View style={styles.item}>
+      <Text style={styles.username}>{item.username || "Sin nombre"}</Text>
+      <Text style={styles.email}>{item.email || "Sin correo"}</Text>
+      <Button
+        title="Seguir"
+        onPress={() => handleFollow(item._id)} // Llama a la función de seguir
+      />
+    </View>
   );
 
   return (
@@ -45,18 +61,21 @@ const SearchScreen = () => {
         style={styles.input}
         placeholder="Escribe el nombre del usuario"
         value={query}
-        onChangeText={(text) => setQuery(text)} // Actualiza el texto de búsqueda
+        onChangeText={(text) => setQuery(text)}
       />
       <Button title="Buscar" onPress={handleSearch} disabled={loading} />
-      {error && <Text style={styles.error}>{error}</Text>} {/* Muestra errores */}
+      {error && <Text style={styles.error}>{error}</Text>}
       {loading ? (
-        <Text>Cargando...</Text> // Muestra un indicador de carga
+        <Text>Cargando...</Text>
       ) : (
-        <FlatList
-          data={results} // Datos a renderizar
-          keyExtractor={(item) => item._id} // Clave única para cada elemento
-          renderItem={renderItem} // Renderiza cada elemento
-        />
+        <>
+          {followStatus && <Text style={styles.status}>{followStatus}</Text>}
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+          />
+        </>
       )}
     </View>
   );
@@ -96,6 +115,11 @@ const styles = StyleSheet.create({
   error: {
     color: "red",
     marginTop: 10,
+  },
+  status: {
+    color: "green",
+    marginTop: 10,
+    marginBottom: 10,
   },
 });
 

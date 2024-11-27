@@ -30,3 +30,24 @@ export const searchUsers = async (query) => {
     throw new Error('No se pudo realizar la búsqueda');
   }
 };
+
+// Servicio para seguir a un usuario
+export const followUser = async (friendId) => {
+  try {
+    const token = await getAuthToken();
+    const response = await axios.post(
+      `${API_URL}/user/add-friend/${friendId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log('Usuario seguido:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error al seguir al usuario:', error.response?.data || error.message);
+    throw new Error('No se pudo seguir al usuario');
+  }
+};
