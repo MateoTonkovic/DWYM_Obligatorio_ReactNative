@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.1.36:3001/api';
+const API_URL = 'http://192.168.8.101:3000/api';
 
 // Función para obtener el token de autenticación
 const getAuthToken = async () => {
